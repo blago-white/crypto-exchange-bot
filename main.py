@@ -2,8 +2,7 @@ import asyncio
 import logging
 
 import src
-from src import settings
-
+from src.config import settings
 
 CONFIG_FILE = "botconfig.ini"
 
@@ -12,7 +11,7 @@ async def main() -> None:
     _start_logger()
 
     await src.setup_bot(
-        config=src.settings.load_config(path=CONFIG_FILE)
+        config=src.config.settings.load_config(path=CONFIG_FILE)
     )
 
 

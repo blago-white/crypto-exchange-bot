@@ -1,19 +1,16 @@
 from aiogram import Bot, Dispatcher
 
-from .settings import Config
-from .handlers import commands
+from .config.settings import Config
+from . import handlers
 
 
 async def setup_bot(config: Config) -> None:
-    bot = _get_bot_instance(token=config.bot.token)
-    dispatcher = _get_configured_dispatcher()
-
-    await _start_pooling(dispatcher=dispatcher, bot=bot)
+    await _start_pooling(dispatcher=_get_dispatcher(), bot=_get_bot_instance(token=config.bot.token))
 
 
-def _get_configured_dispatcher() -> Dispatcher:
+def _get_dispatcher() -> Dispatcher:
     dispatcher = Dispatcher()
-    dispatcher.message.register(commands.start)
+    handlers.register_handlers(dispatcher=dispatcher)
 
     return dispatcher
 
