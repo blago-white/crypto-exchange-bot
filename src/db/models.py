@@ -13,13 +13,19 @@ class UserWallet:
 
     @property
     def amout(self) -> int:
-        return self._EXECUTOR.fetch(sql=f"SELECT amount FROM wallets WHERE userid={self._USERID};")[0] or 0
+        amount = self._EXECUTOR.fetch(sql=f"SELECT amount FROM wallets WHERE userid={self._USERID};")
+        if amount is None:
+            self._authorized = False
+            return 0
+
+        return amount[0]
 
     @property
     def authorized(self) -> bool:
-        self._authorized = self._EXECUTOR.fetch(
-            f"SELECT EXISTS (SELECT userid FROM wallets WHERE userid={self._USERID})"
-        )[0]
+        if self._authorized is None:
+            self._authorized = self._EXECUTOR.fetch(
+                f"SELECT EXISTS (SELECT userid FROM wallets WHERE userid={self._USERID})"
+            )[0]
 
         return self._authorized
 

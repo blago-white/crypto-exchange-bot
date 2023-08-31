@@ -15,5 +15,4 @@ class DBModelsMiddleware(BaseMiddleware):
     ) -> Any:
         with executor.Executor() as executor_:
             data.update(wallet=models.UserWallet(executor=executor_, userid=event.from_user.id))
-
             return await handler(event, data)

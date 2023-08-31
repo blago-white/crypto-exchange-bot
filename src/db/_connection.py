@@ -1,6 +1,6 @@
 import psycopg2
 
-from src.config.settings import DBConfig
+from src.config.config import DBConfig
 
 
 class DBConnector:

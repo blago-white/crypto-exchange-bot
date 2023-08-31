@@ -2,7 +2,7 @@ from aiogram import Bot, Dispatcher
 
 from . import handlers
 from . import middlewares
-from .config.settings import AppConfig
+from .config.config import AppConfig
 
 
 async def setup_bot(config: AppConfig) -> None:

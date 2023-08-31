@@ -1,39 +1,7 @@
-import configparser
-from dataclasses import dataclass
+import string
 
-from src.utils import objects
+CONFIG_FILE = "botconfig.ini"
 
+PROMOCODE_ALLOWED_SYMBOLS = set(list(string.ascii_letters+string.digits))
 
-@dataclass(frozen=True)
-class DBConfig:
-    host: str
-    password: str
-    user: str
-    database: str
-
-
-@dataclass(frozen=True)
-class BotConfig:
-    token: str
-    admin_id: int
-
-
-@dataclass(frozen=True)
-class AppConfig(metaclass=objects.BaseSimpleObject):
-    bot: BotConfig
-    db: DBConfig
-
-
-def load_config(path: str) -> AppConfig:
-    config = configparser.ConfigParser()
-    config.read(path)
-
-    bot_config = config["bot"]
-
-    return AppConfig(
-        bot=BotConfig(
-            token=bot_config.get("token"),
-            admin_id=bot_config.getint("admin_id"),
-        ),
-        db=DBConfig(**config["db"]),
-    )
+MAX_PROMOCODE_LENGTH = 16
