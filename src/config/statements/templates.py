@@ -1,6 +1,4 @@
-__all__ = ["START_COMMAND_TEXT"]
-
-_PROFILE_TEMPLATE = """
+USER_PROFILE_TEMPLATE = """
 💹Инвестиицонный портфель!
     
 💸Баланс: <b>{amount} RUB</b>
@@ -8,5 +6,3 @@ _PROFILE_TEMPLATE = """
     
 🌍Активность за последние 10 минут - <em>{online} человек</em> 
 """
-
-START_COMMAND_TEXT = _PROFILE_TEMPLATE.format(amount=0, userid="{userid}", online="{online}")
