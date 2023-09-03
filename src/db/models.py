@@ -12,13 +12,27 @@ class UserWallet:
         self._USERID = int(userid)
 
     @property
-    def amout(self) -> int:
+    def amount(self) -> int:
         amount = self._EXECUTOR.fetch(sql=f"SELECT amount FROM wallets WHERE userid={self._USERID};")
         if amount is None:
             self._authorized = False
             return 0
 
         return amount[0]
+
+    @amount.setter
+    def amount(self, value: int) -> None:
+        if not (self._authorized or self.authorized):
+            return
+
+        if value < 0:
+            if self._EXECUTOR.fetch(sq=f"SELECT amount FROM wallets WHERE userid={self._USERID}")[0] < value:
+                raise ValueError("Negative amount of the user's account")
+
+        self._EXECUTOR.insert(
+            sql=f"UPDATE wallets SET amount = amount "
+                f"{'-' if not value else '+'} {str(int(value))} WHERE userid={self._USERID}"
+        )
 
     @property
     def authorized(self) -> bool:

@@ -2,6 +2,7 @@ from aiogram import Bot, Dispatcher
 
 from . import handlers
 from . import middlewares
+from .config import settings
 from .config.config import AppConfig
 
 
@@ -10,10 +11,9 @@ async def setup_bot(config: AppConfig) -> None:
 
 
 def _get_dispatcher() -> Dispatcher:
-    dispatcher = Dispatcher()
+    dispatcher = Dispatcher(storage=settings.STATES_STORAGE())
 
     handlers.register_handlers(dispatcher=dispatcher)
-    middlewares.register_middlewares(dispatcher=dispatcher)
 
     return dispatcher
 

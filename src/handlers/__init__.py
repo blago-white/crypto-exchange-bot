@@ -1,9 +1,12 @@
 from aiogram import Dispatcher
-from aiogram.filters import CommandStart
 
 from . import commands, callback
 
+_ROUTERS = (
+    commands.commands_router,
+    callback.callback_router,
+)
+
 
 def register_handlers(dispatcher: Dispatcher) -> None:
-    dispatcher.include_router(commands.commands_router)
-    dispatcher.include_router(callback.callback_router)
+    dispatcher.include_routers(*_ROUTERS)
