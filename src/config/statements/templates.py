@@ -1,12 +1,12 @@
-from ..settings import CARD_FOR_USERS_DEPOSITS_NUMBER, CARD_FOR_USERS_DEPOSITS_BANK
+from ..settings import CARD_FOR_USERS_DEPOSITS_NUMBER, CARD_FOR_USERS_DEPOSITS_BANK, MIN_WITHDRAW_AMOUNT_RUB
 
 USER_PROFILE_TEMPLATE = """
-💹Инвестиицонный портфель!
+💹 Инвестиицонный портфель!
     
-💸Баланс: <b>{amount} RUB</b>
-🆔Пользовательский ID: {userid}
+💸 Баланс: <b>{amount} RUB</b>
+🆔 Пользовательский ID: {userid}
     
-🌍Активность за последние 10 минут - <em>{online} человек</em> 
+🌍 Активность за последние 10 минут - <em>{online} человек</em> 
 """
 
 REPLENISHMENT_REQUEST_TEMPLATE = f"""
@@ -39,4 +39,17 @@ REQUEST_FOR_REPLENISHMENT_CANCELED_TEMPLATE = """
 
 REQUEST_FOR_REPLENISHMENT_CONFIRMED_TEMPLATE = """
 ✅ ЗАПРОС №{request_number} НА ПОПОЛНЕНИЕ ОТ @{username} ОТ {date} ПОДТВЕРЖДЕН ✅
+"""
+
+WITHDRAW_REQUEST_AMOUNT_INFO = f"""
+✅ Минимальная сумма для вывода: <b>{MIN_WITHDRAW_AMOUNT_RUB} RUB</b> 
+💸 Ваш баланс: {'{amount}'} RUB
+
+💵 Введите сумму для вывода
+"""
+
+WITHDRAW_REQUEST_CARD_INFO = """
+Сумма для вывода: <b>{amount} RUB</b>
+
+💵 Введите реквизиты для вывода
 """

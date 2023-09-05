@@ -1,28 +1,23 @@
-import asyncio
-
 from aiogram import Router, F
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message
 
 from ..config import settings
-from ..config.statements import templates
+from ..config.statements import templates, texts
 from ..config.statements.buttons import text
-from ..db import validators
 from ..db.models import UserWallet
-from ..middlewares import dbmiddlewares
-from ..utils import metrics, transactions
-from ..utils.keyboards import inline, reply, keyboards_utils
-from ..utils.states import Replenishment
+from ..filters.wallet import UserWalletMessagesFilter
+from ..middlewares.callback import states_middlewares
+from ..utils import metrics, states
+from ..utils.keyboards import inline, reply
 
 commands_router = Router()
-wallet_handlers_router = Router()
-wallet_handlers_router.message.middleware(dbmiddlewares.UserWalletMiddleware())
-commands_router.include_router(wallet_handlers_router)
+commands_router.message.middleware(states_middlewares.StatelessHandlerCallbackMiddleware())
 
 
-@wallet_handlers_router.message(CommandStart())
-@wallet_handlers_router.message(F.text == text.TO_ACCOUNT_COMMAND)
+@commands_router.message(CommandStart(), UserWalletMessagesFilter())
+@commands_router.message(F.text == text.TO_ACCOUNT_COMMAND, UserWalletMessagesFilter())
 async def start(message: Message, wallet: UserWallet) -> None:
     if not wallet.authorized:
         wallet.save_wallet()
@@ -39,64 +34,21 @@ async def start(message: Message, wallet: UserWallet) -> None:
     )
 
 
-@wallet_handlers_router.message(F.text == text.ECN_OPEN_COMMAND)
+@commands_router.message(F.text == text.ECN_OPEN_COMMAND, UserWalletMessagesFilter())
 async def ecn_open(message: Message, wallet: UserWallet) -> None:
     if wallet.amount < settings.MIN_DEPOSIT_AMOUNT_RUB:
-        return await message.answer(text=text.NEED_REPLENISHMENT)
+        return await message.answer(text=texts.NEED_REPLENISHMENT)
 
-    await message.answer(text=text.USER_AGREEMENT, reply_markup=inline.agreement_inline_keyboard)
+    await message.answer(text=texts.USER_AGREEMENT, reply_markup=inline.agreement_inline_keyboard)
 
 
-@commands_router.message(F.text == text.SEND_MONEY_COMMAND, StateFilter(None))
+@commands_router.message(F.text == text.SEND_MONEY_COMMAND)
 async def send_money(message: Message, state: FSMContext) -> None:
-    await state.set_state(Replenishment.choosing_payment_amount)
-    await message.answer(text=text.REPLENISHMENT_REQUEST_AMOUNT_INFO)
+    await state.set_state(states.Replenishment.choosing_payment_amount)
+    await message.answer(text=texts.REPLENISHMENT_REQUEST_AMOUNT_INFO)
 
 
-@wallet_handlers_router.message(F.text == text.RECEIVE_MONEY_COMMAND)
-async def receive_money(message: Message, wallet: UserWallet) -> None:
-    return
-
-
-@commands_router.message(Replenishment.choosing_payment_amount)
-async def make_transaction(message: Message, state: FSMContext) -> None:
-    if not validators.replenishment_amount_number_valid(message.text):
-        return await message.answer(text=text.NOT_CORRECT_AMOUNT)
-
-    transaction = transactions.Transaction(
-        client=transactions.TransactionClient(id=message.from_user.id, username=message.from_user.username),
-        amount=int(message.text)
-    )
-
-    await state.set_state(Replenishment.wait_payment_confirmation)
-
-    await state.set_data(data=dict(transaction=transaction))
-
-    await message.answer(
-        text=templates.REPLENISHMENT_REQUEST_TEMPLATE.format(amount=transaction.amount),
-        reply_markup=ReplyKeyboardRemove()
-    )
-
-    await message.bot.send_message(
-        chat_id=settings.ADMIN_CHAN_ID,
-        text=templates.USER_SEND_REQUEST_FOR_REPLENISHMENT_TEMPLATE.format(
-            username=transaction.client.username,
-            amount=transaction.amount,
-            request_number=transaction.id,
-            date=transaction.initialization_time
-        ),
-        reply_markup=keyboards_utils.get_transaction_confirmation_keyboard(
-            client_id=message.from_user.id
-        )
-    )
-
-    await asyncio.sleep(settings.TRANSACTION_COMLETION_TIME_SECONDS)
-
-    if await state.get_state() == Replenishment.wait_payment_confirmation:
-        await message.bot.send_message(
-            chat_id=transaction.client.id,
-            text=text.TRANSACTION_CANCELED,
-            reply_markup=reply.account_keyboard
-        )
-
-        await state.clear()
+@commands_router.message(F.text == text.RECEIVE_MONEY_COMMAND, UserWalletMessagesFilter())
+async def withdraw_money(message: Message, state: FSMContext, wallet: UserWallet) -> None:
+    await state.set_state(states.Withdraw.choosing_withdraw_amount)
+    await message.answer(text=templates.WITHDRAW_REQUEST_AMOUNT_INFO.format(amount=wallet.amount))

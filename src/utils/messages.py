@@ -2,6 +2,7 @@ from aiogram.types import Message
 
 from ..config.statements import templates
 from ..config.statements.buttons import text
+from ..config.statements import texts
 from ..utils.keyboards import reply
 from ..utils.transactions import Transaction
 
@@ -21,8 +22,8 @@ async def send_transaction_result_cancel(transaction: Transaction, admin_confirm
 async def _send_transaction_result(success: bool, transaction: Transaction,
                                    admin_confirmation_message: Message) -> None:
     admin_message_template, client_message_template = (
-        templates.REQUEST_FOR_REPLENISHMENT_CONFIRMED_TEMPLATE, text.TRANSACTION_ACCEPTED) if success else (
-        templates.REQUEST_FOR_REPLENISHMENT_CANCELED_TEMPLATE, text.TRANSACTION_CANCELED
+        templates.REQUEST_FOR_REPLENISHMENT_CONFIRMED_TEMPLATE, texts.TRANSACTION_ACCEPTED) if success else (
+        templates.REQUEST_FOR_REPLENISHMENT_CANCELED_TEMPLATE, texts.TRANSACTION_CANCELED
     )
 
     await admin_confirmation_message.edit_text(
@@ -35,6 +36,6 @@ async def _send_transaction_result(success: bool, transaction: Transaction,
 
     await admin_confirmation_message.bot.send_message(
         chat_id=transaction.client.id,
-        text=client_message_template,
+        text=client_message_template.format(amount=transaction.amount),
         reply_markup=reply.account_keyboard
     )

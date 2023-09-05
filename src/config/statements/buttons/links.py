@@ -42,5 +42,4 @@ class UserAgreementLink(_BaseLinkButton):
 
     @staticmethod
     def url() -> str:
-        return "https://www.google.com/"
-
+        return "https://telegra.ph/Soglashenie-dlya-otkrytiya-ECN-07-21"
