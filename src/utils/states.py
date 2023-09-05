@@ -14,5 +14,13 @@ class Withdraw(StatesGroup):
     choosing_withdraw_card = State()
 
 
+class EnteringPromocode(StatesGroup):
+    entering_promocode = State()
+
+
+class AdminAddPromocode(StatesGroup):
+    entering_withdraw_amount = State()
+
+
 def get_user_stortage_key(userid: int) -> StorageKey:
     return StorageKey(bot_id=BOT_ID, chat_id=userid, user_id=userid)

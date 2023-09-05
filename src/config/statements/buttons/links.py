@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
+from src.config.settings import SUPPORT_BOT_TAG
 from . import text
 
 
@@ -32,7 +33,7 @@ class SupportLink(_BaseLinkButton):
 
     @staticmethod
     def url() -> str:
-        return "https://t.me/Binance_Trade_Support_bot"
+        return f"https://t.me/{SUPPORT_BOT_TAG}"
 
 
 class UserAgreementLink(_BaseLinkButton):

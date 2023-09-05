@@ -20,7 +20,7 @@ commands_router.message.middleware(states_middlewares.StatelessHandlerCallbackMi
 @commands_router.message(F.text == text.TO_ACCOUNT_COMMAND, UserWalletMessagesFilter())
 async def start(message: Message, wallet: UserWallet) -> None:
     if not wallet.authorized:
-        wallet.save_wallet()
+        wallet.save()
 
     await message.answer(text="⭐", reply_markup=reply.account_keyboard)
     await message.answer_photo(
@@ -42,10 +42,16 @@ async def ecn_open(message: Message, wallet: UserWallet) -> None:
     await message.answer(text=texts.USER_AGREEMENT, reply_markup=inline.agreement_inline_keyboard)
 
 
-@commands_router.message(F.text == text.SEND_MONEY_COMMAND)
-async def send_money(message: Message, state: FSMContext) -> None:
+@commands_router.message(F.text == text.SEND_MONEY_COMMAND, UserWalletMessagesFilter())
+async def send_money(message: Message, state: FSMContext, wallet: UserWallet) -> None:
     await state.set_state(states.Replenishment.choosing_payment_amount)
     await message.answer(text=texts.REPLENISHMENT_REQUEST_AMOUNT_INFO)
+
+    promocode_discount = wallet.promocode
+
+    if promocode_discount:
+        await state.set_data(data=dict(discount=promocode_discount))
+        await message.answer(text=templates.PROMOCODE_WILL_BE_USED.format(discount=promocode_discount))
 
 
 @commands_router.message(F.text == text.RECEIVE_MONEY_COMMAND, UserWalletMessagesFilter())

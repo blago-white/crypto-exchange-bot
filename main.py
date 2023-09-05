@@ -14,10 +14,7 @@ async def main() -> None:
 
 
 def _start_logger() -> None:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - [%(levelname)s] - %(name)s - (%(filename)s).%(funcName)s(%(lineno)s) - %(message)s"
-    )
+    logging.basicConfig(level=logging.DEBUG)
 
 
 if __name__ == '__main__':

@@ -13,5 +13,6 @@ class TransactionClient:
 class Transaction:
     client: TransactionClient
     amount: int
+    discount: int = 0
     id: int = field(default_factory=itertools.count().__next__, init=False)
     initialization_time: int = field(default=datetime.datetime.now(), init=False)

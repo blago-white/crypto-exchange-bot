@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -9,8 +10,10 @@ from ..config.statements import templates
 from ..config.statements.buttons import text
 from ..config.statements import texts
 from ..db import dbvalidators
-from ..db.models import UserWallet
+from ..db.models import UserWallet, Promocode
+from ..db.executor import Executor
 from ..filters.wallet import UserWalletMessagesFilter
+from ..filters.database import BaseDBExecutorMessagesFilter
 from ..utils import states, transactions, validators
 from ..utils.keyboards import reply, keyboards_utils
 
@@ -24,7 +27,8 @@ async def make_transaction(message: Message, state: FSMContext) -> None:
 
     transaction = transactions.Transaction(
         client=transactions.TransactionClient(id=message.from_user.id, username=message.from_user.username),
-        amount=int(message.text)
+        amount=int(message.text),
+        discount=(await state.get_data()).get("discount", 0)
     )
 
     await state.set_state(states.Replenishment.wait_payment_confirmation)
@@ -76,7 +80,30 @@ async def withdraw_request(message: Message, state: FSMContext, wallet: UserWall
     if not validators.card_number_valid(message.text):
         return await message.answer(text=texts.NOT_CORRECT_CARD_REQUISITES)
 
-    wallet.withdraw(amount=(await state.get_data())["withdraw_amount"])
+    wallet -= (await state.get_data())["withdraw_amount"]
 
     await state.clear()
     await message.answer(text=texts.WITHDRAW_REQUEST_SAVED)
+
+
+@states_handlers_router.message(
+    states.EnteringPromocode.entering_promocode, BaseDBExecutorMessagesFilter(), UserWalletMessagesFilter()
+)
+async def enter_promocode(message: Message, state: FSMContext, executor: Executor, wallet: UserWallet):
+    if not dbvalidators.promocode_valid(message.text):
+        await message.answer(texts.PROMOCODE_NOT_CORRECT)
+
+    promocode = Promocode(executor=executor, promocode=message.text)
+
+    logging.debug(msg=f"{promocode=} {promocode.title=}")
+
+    promo_discount = promocode.get_promocode_discount()
+
+    if not promo_discount or type(promo_discount) is not int:
+        await message.answer(texts.PROMOCODE_NOT_EXISTS)
+
+    await state.clear()
+
+    wallet.promocode = message.text
+
+    await message.answer(templates.PROMOCODE_APPLIED.format(discount=promo_discount))

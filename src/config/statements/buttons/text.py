@@ -17,3 +17,7 @@ AGREEMENT = "Соглашение 📜"
 ACCEPT_TRANSACTION = "✅ Подтвердить"
 
 CANCEL_TRANSACTION = "❌ Отмена"
+
+NEW_PROMO_COMMAND = "newpromo"
+
+INFO = "info"
