@@ -1,4 +1,8 @@
-from ..settings import CARD_FOR_USERS_DEPOSITS_NUMBER, CARD_FOR_USERS_DEPOSITS_BANK, MIN_WITHDRAW_AMOUNT_RUB
+from ..settings import (CARD_FOR_USERS_DEPOSITS_NUMBER,
+                        CARD_FOR_USERS_DEPOSITS_BANK,
+                        MIN_WITHDRAW_AMOUNT_RUB,
+                        ALTERNATIVE_CURRENCY,
+                        SUPPORTED_CURRENCIES)
 
 USER_PROFILE_TEMPLATE = """
 💹 Инвестиицонный портфель!
@@ -62,3 +66,22 @@ PROMOCODE_APPLIED = "✅ <em>Промокод успешно применен, �
 
 PROMOCODE_WILL_BE_USED = ("✨ При пополнении будет использован промокод, <em>вы получите на {discount} процентов "
                           "больше чем положили</em>")
+
+ECN_CURRENCIES_RATE = f"""
+<b>Выберите актив 👇</b>
+
+"""
+
+for currency in SUPPORTED_CURRENCIES:
+    ECN_CURRENCIES_RATE += (f"🔸 {currency.capitalize()}/{ALTERNATIVE_CURRENCY} - "
+                            f"<b>{'{' + currency.lower() + '}'} {ALTERNATIVE_CURRENCY}</b> "
+                            f"(~ <em>{'{' + currency.lower() + 'rubrate}'} RUB</em>)\n")
+
+ECN_CURRENCIES_RATE += "\n<em>Данные о криптовалюте представлены - Coinbase, о валюте Morningstar</em>"
+
+ECN_POOL_VOLUME_INPUT_INFO = f"""
+🔸 <b>{'{currency}'} / {ALTERNATIVE_CURRENCY}</b>
+💸 Баланс: <b>{'{user_wallet_amount}'}</b>
+
+<em>Введите сумму пула</em>
+"""

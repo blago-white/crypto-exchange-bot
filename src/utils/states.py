@@ -18,6 +18,10 @@ class EnteringPromocode(StatesGroup):
     entering_promocode = State()
 
 
+class CurrencyPool(StatesGroup):
+    pool_volume_input = State()
+
+
 class AdminAddPromocode(StatesGroup):
     entering_withdraw_amount = State()
 

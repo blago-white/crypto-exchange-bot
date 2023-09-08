@@ -51,3 +51,7 @@ ADMIN_COMMANDS_INFO = f"""
 PROMOCODE_NOT_CORRECT = "❌ Введен <b>неверный промокод!</b>"
 
 PROMOCODE_NOT_EXISTS = "❌ Введенный промокод <b>не существует!</b>"
+
+POOL_VALUE_SMALL = f"❌ Минимальная сумма пула - {settings.MIN_ECN_POOL_VALUE} RUB"
+
+NOT_ENOUGH_MONEY = "⛔ Недостаточно средств на счету!"

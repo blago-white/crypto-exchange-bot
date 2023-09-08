@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 
@@ -107,3 +107,16 @@ async def enter_promocode(message: Message, state: FSMContext, executor: Executo
     wallet.promocode = message.text
 
     await message.answer(templates.PROMOCODE_APPLIED.format(discount=promo_discount))
+
+
+@states_handlers_router.message(states.CurrencyPool.pool_volume_input,
+                                F.text.isdigit(),
+                                UserWalletMessagesFilter())
+async def input_ecn_pool_value(message: Message, state: FSMContext, wallet: UserWallet):
+    if int(message.text) < settings.MIN_ECN_POOL_VALUE:
+        return await message.answer(text=texts.POOL_VALUE_SMALL)
+
+    if int(message.text) > wallet.amount:
+        return await message.answer(text=texts.NOT_ENOUGH_MONEY)
+
+    pass

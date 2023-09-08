@@ -32,12 +32,22 @@ SUPPORT_BOT_TAG = "binance_support_trade_bot"
 
 TRANSACTION_COMLETION_TIME_SECONDS = 900
 
-ADMINS = [
-    935570478
-]
+ADMINS = (
+    935570478,
+)
 
 BOT_ID = 6432965544
 
 CUSTOM_CALLBACK_QUERIES_SEPARATOR = "@"
 
 STATES_STORAGE = MemoryStorage
+
+SUPPORTED_CURRENCIES = (
+    "Bitcoin", "Ripple", "Doge", "Ethereum", "BinanceCoin", "Litecoin", "Euro"
+)
+
+ALTERNATIVE_CURRENCY = "USD"
+
+USD_RUB_RATE = 98.2
+
+MIN_ECN_POOL_VALUE = 100

@@ -1,18 +1,23 @@
 import logging
 from abc import ABCMeta, abstractmethod
+from decimal import Decimal
 
 from .executor import Executor
 from .dbvalidators import promocode_valid, promocode_percentage_valid
 from . import exceptions
 
 
-class _BaseWalletModel(metaclass=ABCMeta):
+class _BaseModel(metaclass=ABCMeta):
+    _EXECUTOR: Executor
+
+    def __init__(self, executor: Executor = None):
+        self._EXECUTOR = executor
+
+
+class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
     _EXECUTOR: Executor
 
     _authorized: bool = None
-
-    def __init__(self, executor):
-        self._EXECUTOR = executor
 
     @property
     def authorized(self) -> bool:
@@ -48,6 +53,28 @@ class _BaseWalletModel(metaclass=ABCMeta):
             return function(*args, **kwargs)
 
         return wrapp
+
+
+class Currencies(_BaseModel):
+    _EXECUTOR: Executor
+
+    def __new__(cls, executor: Executor = None):
+        if not hasattr(cls, "instance"):
+            cls.instance = super(Currencies, cls).__new__(cls)
+
+            if not executor:
+                raise ValueError("There is not a single instance, a executor is needed!")
+
+            cls.instance.__init__(executor=executor)
+
+        return cls.instance
+
+    @property
+    def currencies(self) -> dict[str, float]:
+        return {
+            currency: float(rate)
+            for currency, rate in self._EXECUTOR.fetchall(sql="SELECT * FROM currencies;")
+        }
 
 
 class UserWallet(_BaseWalletModel):

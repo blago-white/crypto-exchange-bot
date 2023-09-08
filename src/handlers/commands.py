@@ -7,9 +7,11 @@ from ..config import settings
 from ..config.statements import templates, texts
 from ..config.statements.buttons import text
 from ..db.models import UserWallet
+from ..db.executor import Executor
 from ..filters.wallet import UserWalletMessagesFilter
+from ..filters.database import BaseDBExecutorMessagesFilter
 from ..middlewares.callback import states_middlewares
-from ..utils import metrics, states
+from ..utils import metrics, states, currencies
 from ..utils.keyboards import inline, reply
 
 commands_router = Router()
@@ -34,12 +36,22 @@ async def start(message: Message, wallet: UserWallet) -> None:
     )
 
 
-@commands_router.message(F.text == text.ECN_OPEN_COMMAND, UserWalletMessagesFilter())
-async def ecn_open(message: Message, wallet: UserWallet) -> None:
-    if wallet.amount < settings.MIN_DEPOSIT_AMOUNT_RUB:
+@commands_router.message(F.text == text.ECN_OPEN_COMMAND,
+                         BaseDBExecutorMessagesFilter())
+async def ecn_open(message: Message, executor: Executor) -> None:
+    if UserWallet(executor=executor, userid=message.from_user.id).amount < settings.MIN_DEPOSIT_AMOUNT_RUB:
         return await message.answer(text=texts.NEED_REPLENISHMENT)
 
+    currencies_ = currencies.get_current_currencies_rates(executor=executor)
+
     await message.answer(text=texts.USER_AGREEMENT, reply_markup=inline.agreement_inline_keyboard)
+
+    await message.answer(
+        text=templates.ECN_CURRENCIES_RATE.format(
+            **currencies_, **currencies.convert_currencies_rates_to_rubles(currencies=currencies_)
+        ),
+        reply_markup=inline.currencies_inline_keyboard
+    )
 
 
 @commands_router.message(F.text == text.SEND_MONEY_COMMAND, UserWalletMessagesFilter())
