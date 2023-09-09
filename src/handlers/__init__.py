@@ -1,7 +1,7 @@
 from aiogram import Dispatcher
 
-from .admin import callback as admin_callback, commands as admin_commands, states as admin_states
 from . import commands, callback, states
+from .admin import callback as admin_callback, commands as admin_commands, states as admin_states
 
 _ROUTERS = (
     admin_commands.admin_commands_router,

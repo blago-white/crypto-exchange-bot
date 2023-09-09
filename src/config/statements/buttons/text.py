@@ -21,3 +21,15 @@ CANCEL_TRANSACTION = "❌ Отмена"
 NEW_PROMO_COMMAND = "newpromo"
 
 INFO = "info"
+
+ECN_POOL_UP = "Повышение 🔼"
+
+ECN_POOL_DOWN = "Понижение 🔽"
+
+ECN_POOL_SAME = "Не изменится ⏸"
+
+NEXT_POOL_QUESTION = "🤔 Ещё играем?"
+
+YES = "✅ Да"
+
+NO = "❌ Нет"

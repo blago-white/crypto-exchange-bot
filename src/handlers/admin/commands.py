@@ -1,13 +1,12 @@
-from aiogram import Router, F
-from aiogram.types import Message
+from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 
-from src.config.statements.texts import ADMIN_ADD_PROMO_INFO, ADMIN_COMMANDS_INFO
 from src.config.statements.buttons.text import NEW_PROMO_COMMAND, INFO
-from src.utils.states import AdminAddPromocode
+from src.config.statements.texts import ADMIN_ADD_PROMO_INFO, ADMIN_COMMANDS_INFO
 from src.filters.admin import AdminFilter
-
+from src.utils.states import AdminAddPromocode
 
 admin_commands_router = Router()
 admin_commands_router.message.filter(AdminFilter())

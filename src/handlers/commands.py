@@ -6,10 +6,10 @@ from aiogram.types import Message
 from ..config import settings
 from ..config.statements import templates, texts
 from ..config.statements.buttons import text
-from ..db.models import UserWallet
 from ..db.executor import Executor
-from ..filters.wallet import UserWalletMessagesFilter
+from ..db.models import UserWallet
 from ..filters.database import BaseDBExecutorMessagesFilter
+from ..filters.wallet import UserWalletMessagesFilter
 from ..middlewares.callback import states_middlewares
 from ..utils import metrics, states, currencies
 from ..utils.keyboards import inline, reply

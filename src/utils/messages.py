@@ -1,7 +1,6 @@
 from aiogram.types import Message
 
 from ..config.statements import templates
-from ..config.statements.buttons import text
 from ..config.statements import texts
 from ..utils.keyboards import reply
 from ..utils.transactions import Transaction

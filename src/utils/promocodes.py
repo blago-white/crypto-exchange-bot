@@ -1,7 +1,5 @@
 import random
 import string
-from dataclasses import dataclass
-
 
 from src.config.settings import PROMOCODE_LENGTH
 from src.db import models

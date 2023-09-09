@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
@@ -7,15 +6,14 @@ from aiogram.types import Message, ReplyKeyboardRemove
 
 from ..config import settings
 from ..config.statements import templates
-from ..config.statements.buttons import text
 from ..config.statements import texts
 from ..db import dbvalidators
-from ..db.models import UserWallet, Promocode
 from ..db.executor import Executor
-from ..filters.wallet import UserWalletMessagesFilter
+from ..db.models import UserWallet, Promocode
 from ..filters.database import BaseDBExecutorMessagesFilter
-from ..utils import states, transactions, validators
-from ..utils.keyboards import reply, keyboards_utils
+from ..filters.wallet import UserWalletMessagesFilter
+from ..utils import states, transactions, validators, currencies
+from ..utils.keyboards import reply, keyboards_utils, inline
 
 states_handlers_router = Router()
 
@@ -95,8 +93,6 @@ async def enter_promocode(message: Message, state: FSMContext, executor: Executo
 
     promocode = Promocode(executor=executor, promocode=message.text)
 
-    logging.debug(msg=f"{promocode=} {promocode.title=}")
-
     promo_discount = promocode.get_promocode_discount()
 
     if not promo_discount or type(promo_discount) is not int:
@@ -111,12 +107,27 @@ async def enter_promocode(message: Message, state: FSMContext, executor: Executo
 
 @states_handlers_router.message(states.CurrencyPool.pool_volume_input,
                                 F.text.isdigit(),
-                                UserWalletMessagesFilter())
-async def input_ecn_pool_value(message: Message, state: FSMContext, wallet: UserWallet):
+                                BaseDBExecutorMessagesFilter())
+async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Executor):
     if int(message.text) < settings.MIN_ECN_POOL_VALUE:
         return await message.answer(text=texts.POOL_VALUE_SMALL)
 
-    if int(message.text) > wallet.amount:
+    if int(message.text) > UserWallet(executor=executor, userid=message.from_user.id).amount:
         return await message.answer(text=texts.NOT_ENOUGH_MONEY)
 
-    pass
+    requested_currency: str | None = (await state.get_data()).get("currency")
+
+    if not requested_currency:
+        return await message.answer(text=texts.POOL_CURRENCY_DOES_NOT_EXISTS)
+
+    await state.set_state(state=states.CurrencyPool.pool_type_input)
+
+    pool_details_message = await message.answer(text=templates.ECN_POOL_TYPE_SELECT.format(
+        currency=requested_currency.capitalize(),
+        pool_value=currencies.convert_rub_to_usd(amount=float(message.text)),
+        pool_value_rub=message.text),
+                        reply_markup=inline.ecn_pool_types_inline_keyboard)
+
+    await state.set_data(data=dict(currency=requested_currency,
+                                   amount_rub=float(message.text),
+                                   pool_details_message=pool_details_message))

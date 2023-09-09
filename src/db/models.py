@@ -1,10 +1,11 @@
-import logging
-from abc import ABCMeta, abstractmethod
-from decimal import Decimal
+import random
+import time
+from abc import ABCMeta
 
-from .executor import Executor
-from .dbvalidators import promocode_valid, promocode_percentage_valid
 from . import exceptions
+from .dbvalidators import promocode_valid, promocode_percentage_valid
+from .executor import Executor
+from ..config.settings import CURRENCIES_RATES_UPDATING_COOLDOWN
 
 
 class _BaseModel(metaclass=ABCMeta):
@@ -33,7 +34,7 @@ class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
         def wrapp(*args, **kwargs):
             amount = args[-1] if len(args) > 1 else kwargs["amount"]
 
-            if amount <= 0:
+            if amount < 0:
                 raise ValueError("Attempt to change the invoice amount to a negative number")
 
             return function(*args, **kwargs)
@@ -45,8 +46,6 @@ class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
         def wrapp(*args, **kwargs):
             instance: _BaseWalletModel = args[0]
 
-            logging.debug(msg=f"{instance=} {instance._authorized=} {instance.authorized=}")
-
             if not (instance._authorized or instance.authorized):
                 raise PermissionError("Wallet not authorized")
 
@@ -57,6 +56,8 @@ class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
 
 class Currencies(_BaseModel):
     _EXECUTOR: Executor
+    _last_rates_update: float
+    _currencies: dict[str, float]
 
     def __new__(cls, executor: Executor = None):
         if not hasattr(cls, "instance"):
@@ -66,15 +67,60 @@ class Currencies(_BaseModel):
                 raise ValueError("There is not a single instance, a executor is needed!")
 
             cls.instance.__init__(executor=executor)
+            cls.instance._update_currencies_rates()
 
         return cls.instance
 
+    @staticmethod
+    def _rate_updater(method):
+        def wrapp(*args, **kwargs):
+            currencies_model: Currencies = args[0]
+
+            if time.time() - currencies_model._last_rates_update > CURRENCIES_RATES_UPDATING_COOLDOWN:
+                currencies_model._update_currencies_rates()
+
+            return method(*args, **kwargs)
+
+        return wrapp
+
     @property
+    @_rate_updater
     def currencies(self) -> dict[str, float]:
-        return {
+        return self._currencies
+
+    @_rate_updater
+    def get_rate(self, currency) -> float:
+        return self._currencies[currency]
+
+    def _update_currencies_rates(self):
+        if ("_last_rates_update" in self.__dict__
+                and self._get_time_after_updating() < CURRENCIES_RATES_UPDATING_COOLDOWN):
+            return
+
+        if "_currencies" in self.__dict__:
+            for currency in self._currencies:
+                new_rate = self._currencies[currency]
+                new_rate += self._get_random_currency_incrementer(currency_rate=new_rate)
+
+                self._EXECUTOR.insert(sql=f"UPDATE currencies SET rate={new_rate} WHERE currency='{currency}'")
+
+        self._currencies = {
             currency: float(rate)
             for currency, rate in self._EXECUTOR.fetchall(sql="SELECT * FROM currencies;")
         }
+        self._last_rates_update = time.time()
+
+    def _get_time_after_updating(self):
+        return time.time() - self._last_rates_update
+
+    @staticmethod
+    def _get_random_currency_incrementer(currency_rate: float) -> float:
+        incrementer = random.uniform(-currency_rate / 100, currency_rate / 100)
+
+        if currency_rate <= abs(incrementer):
+            incrementer = -incrementer
+
+        return incrementer
 
 
 class UserWallet(_BaseWalletModel):

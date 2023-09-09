@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 from src.config import settings
-from src.config.statements.buttons import text
 from src.config.statements import texts
 from src.utils.states import get_user_stortage_key
 from src.utils.transactions import Transaction

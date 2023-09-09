@@ -1,18 +1,15 @@
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 
-from src.config.statements.texts import ADMIN_ADD_PROMO_INFO, ADMIN_PROMO_NOT_CORRECT
 from src.config.statements import templates
-from src.utils.states import AdminAddPromocode
+from src.config.statements.texts import ADMIN_PROMO_NOT_CORRECT
 from src.db.dbvalidators import promocode_percentage_valid
-from src.db.models import Promocode
 from src.db.executor import Executor
-from src.db import exceptions
-from src.utils.promocodes import generate_promocode_title, save_promocode as save_promocode_to_db
-from src.filters.database import BaseDBExecutorMessagesFilter
 from src.filters.admin import AdminFilter
-
+from src.filters.database import BaseDBExecutorMessagesFilter
+from src.utils.promocodes import save_promocode as save_promocode_to_db
+from src.utils.states import AdminAddPromocode
 
 admin_states_router = Router()
 admin_states_router.message.filter(AdminFilter())

@@ -1,7 +1,6 @@
 from typing import Callable, Awaitable, Any
 
 from aiogram import BaseMiddleware
-from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 

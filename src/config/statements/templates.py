@@ -1,8 +1,4 @@
-from ..settings import (CARD_FOR_USERS_DEPOSITS_NUMBER,
-                        CARD_FOR_USERS_DEPOSITS_BANK,
-                        MIN_WITHDRAW_AMOUNT_RUB,
-                        ALTERNATIVE_CURRENCY,
-                        SUPPORTED_CURRENCIES)
+from .. import settings
 
 USER_PROFILE_TEMPLATE = """
 💹 Инвестиицонный портфель!
@@ -17,7 +13,7 @@ REPLENISHMENT_REQUEST_TEMPLATE = f"""
 <b>Запрос на пополнение счета</b>
 — — — — — — — — — — — —
 💳 Реквизиты карты: 🇷🇺
-<code>{CARD_FOR_USERS_DEPOSITS_NUMBER} {CARD_FOR_USERS_DEPOSITS_BANK}</code>
+<code>{settings.CARD_FOR_USERS_DEPOSITS_NUMBER} {settings.CARD_FOR_USERS_DEPOSITS_BANK}</code>
 💸 Сумма пополнения: <b>{'{amount}'} RUB</b>
 — — — — — — — — — — — —
 ‼ Важно пополнить сумму без дробных частей (копеек)
@@ -46,7 +42,7 @@ REQUEST_FOR_REPLENISHMENT_CONFIRMED_TEMPLATE = """
 """
 
 WITHDRAW_REQUEST_AMOUNT_INFO = f"""
-✅ Минимальная сумма для вывода: <b>{MIN_WITHDRAW_AMOUNT_RUB} RUB</b> 
+✅ Минимальная сумма для вывода: <b>{settings.MIN_WITHDRAW_AMOUNT_RUB} RUB</b> 
 💸 Ваш баланс: {'{amount}'} RUB
 
 💵 Введите сумму для вывода
@@ -72,16 +68,58 @@ ECN_CURRENCIES_RATE = f"""
 
 """
 
-for currency in SUPPORTED_CURRENCIES:
-    ECN_CURRENCIES_RATE += (f"🔸 {currency.capitalize()}/{ALTERNATIVE_CURRENCY} - "
-                            f"<b>{'{' + currency.lower() + '}'} {ALTERNATIVE_CURRENCY}</b> "
+for currency in settings.SUPPORTED_CURRENCIES:
+    ECN_CURRENCIES_RATE += (f"🔸 {currency.capitalize()}/{settings.ALTERNATIVE_CURRENCY} - "
+                            f"<b>{'{' + currency.lower() + '}'} {settings.ALTERNATIVE_CURRENCY}</b> "
                             f"(~ <em>{'{' + currency.lower() + 'rubrate}'} RUB</em>)\n")
 
 ECN_CURRENCIES_RATE += "\n<em>Данные о криптовалюте представлены - Coinbase, о валюте Morningstar</em>"
 
 ECN_POOL_VOLUME_INPUT_INFO = f"""
-🔸 <b>{'{currency}'} / {ALTERNATIVE_CURRENCY}</b>
+🔸 <b>{'{currency}'} / {settings.ALTERNATIVE_CURRENCY}</b>
 💸 Баланс: <b>{'{user_wallet_amount}'}</b>
 
 <em>Введите сумму пула</em>
+"""
+
+ECN_POOL_TYPE_SELECT = f"""
+🔸 <b>{'{currency}'}/{settings.ALTERNATIVE_CURRENCY}</b>
+
+💸 Стоимость: <b>{'{pool_value}'} {settings.ALTERNATIVE_CURRENCY} ~</b> <em>({'{pool_value_rub}'} RUB)</em>
+
+Повышение x2
+Не изменится x10
+Понижение x2
+"""
+
+POOL_STARTED = f"💹 <b>Пул на {'{pool_amount_rub}'} RUB длительностью {settings.POOL_DURATION} секунд начат!</b>"
+
+POOL_ENDED_INFO = f"""
+{'{pool_type}'}
+
+💱 Валюта: <b>{'{currency}'}</b>
+💰 Сумма пула: <b>{'{pool_amount_rub}'} RUB</b>
+
+💸 Начальная цена: <b>{'{start_currency_rate_usd}'} {settings.ALTERNATIVE_CURRENCY}</b> 
+<em>(~ {'{start_currency_rate_rub}'} RUB)</em>
+
+💵 Цена сейчас: <b>{'{end_currency_rate_usd}'} {settings.ALTERNATIVE_CURRENCY}</b> 
+<em>(~ {'{end_currency_rate_rub}'} RUB)</em>
+
+⏰ Время: <em><b>{settings.POOL_DURATION}/{settings.POOL_DURATION} Секунд</b></em>
+"""
+
+POOL_ENDED_SUCCESSFULLY = f"""
+{'{pool_type_icon}'} За {settings.POOL_DURATION} секунд цена {'{pool_result}'}!
+ 
+✅ Ваш пул удачный, <b>+{'{pool_amount_rub}'} RUB</b>
+💸 Баланс: <b>{'{wallet_amount}'} RUB</b>
+"""
+
+
+POOL_ENDED_UNSUCCESSFULLY = f"""
+{'{pool_type_icon}'} За {settings.POOL_DURATION} секунд цена {'{pool_result}'}!
+ 
+❌ Ваш пул неудачный, <b>-{'{pool_amount_rub}'} RUB</b>
+💸 Баланс: <b>{'{wallet_amount}'} RUB</b>
 """

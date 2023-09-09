@@ -3,10 +3,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.config.settings import SUPPORTED_CURRENCIES
 from src.config.statements.buttons import links, callback
+from src.utils import pools
 
 account_inline_keyboard = InlineKeyboardBuilder()
 agreement_inline_keyboard = InlineKeyboardBuilder()
 currencies_inline_keyboard = InlineKeyboardBuilder()
+ecn_pool_types_inline_keyboard = InlineKeyboardBuilder()
+ecn_pool_continue_inline_keyboard = InlineKeyboardBuilder()
 
 account_inline_keyboard.row(types.InlineKeyboardButton(
     text=links.MainChannelLink.text(),
@@ -25,6 +28,32 @@ agreement_inline_keyboard.row(types.InlineKeyboardButton(
     text=links.UserAgreementLink.text(),
     url=links.UserAgreementLink.url()
 ))
+
+ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
+    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeUp).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeUp).callback
+))
+
+ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
+    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeDown).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeDown).callback
+))
+
+ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
+    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeSame).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeSame).callback
+))
+
+ecn_pool_continue_inline_keyboard.row(
+    types.InlineKeyboardButton(
+        text=callback.ContinueTradingButton().text,
+        callback_data=callback.ContinueTradingButton().callback
+    ),
+    types.InlineKeyboardButton(
+        text=callback.StopTradingButton().text,
+        callback_data=callback.StopTradingButton().callback
+    )
+)
 
 
 def _fill_currencies_keyboard(keyboard: InlineKeyboardBuilder) -> None:
@@ -48,3 +77,7 @@ agreement_inline_keyboard = agreement_inline_keyboard.as_markup()
 
 _fill_currencies_keyboard(keyboard=currencies_inline_keyboard)
 currencies_inline_keyboard = currencies_inline_keyboard.as_markup()
+
+ecn_pool_types_inline_keyboard = ecn_pool_types_inline_keyboard.as_markup()
+
+ecn_pool_continue_inline_keyboard = ecn_pool_continue_inline_keyboard.as_markup()
