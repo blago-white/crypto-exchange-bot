@@ -5,7 +5,7 @@ from abc import ABCMeta
 from . import exceptions
 from .dbvalidators import promocode_valid, promocode_percentage_valid
 from .executor import Executor
-from ..config.settings import CURRENCIES_RATES_UPDATING_COOLDOWN
+from ..config import settings
 
 
 class _BaseModel(metaclass=ABCMeta):
@@ -76,7 +76,7 @@ class Currencies(_BaseModel):
         def wrapp(*args, **kwargs):
             currencies_model: Currencies = args[0]
 
-            if time.time() - currencies_model._last_rates_update > CURRENCIES_RATES_UPDATING_COOLDOWN:
+            if time.time() - currencies_model._last_rates_update > settings.CURRENCIES_RATES_UPDATING_COOLDOWN:
                 currencies_model._update_currencies_rates()
 
             return method(*args, **kwargs)
@@ -94,13 +94,13 @@ class Currencies(_BaseModel):
 
     def _update_currencies_rates(self):
         if ("_last_rates_update" in self.__dict__
-                and self._get_time_after_updating() < CURRENCIES_RATES_UPDATING_COOLDOWN):
+                and self._get_time_after_updating() < settings.CURRENCIES_RATES_UPDATING_COOLDOWN):
             return
 
         if "_currencies" in self.__dict__:
             for currency in self._currencies:
                 new_rate = self._currencies[currency]
-                new_rate += self._get_random_currency_incrementer(currency_rate=new_rate)
+                new_rate += self._get_random_currency_incrementer(currency=currency, rate=new_rate)
 
                 self._EXECUTOR.insert(sql=f"UPDATE currencies SET rate={new_rate} WHERE currency='{currency}'")
 
@@ -114,11 +114,14 @@ class Currencies(_BaseModel):
         return time.time() - self._last_rates_update
 
     @staticmethod
-    def _get_random_currency_incrementer(currency_rate: float) -> float:
-        incrementer = random.uniform(-currency_rate / 100, currency_rate / 100)
+    def _get_random_currency_incrementer(currency: str, rate: float) -> float:
+        incrementer = random.uniform(-rate / 100, rate / 100)
 
-        if currency_rate <= abs(incrementer):
+        if rate <= abs(incrementer) or settings.MAX_CURRENCIES_PRICES[currency.capitalize()] < (rate + incrementer):
             incrementer = -incrementer
+
+        elif incrementer < 0 and settings.MIN_CURRENCIES_PRICES[currency.capitalize()] > (rate + incrementer):
+            incrementer = abs(incrementer)
 
         return incrementer
 
