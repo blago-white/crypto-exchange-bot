@@ -18,8 +18,9 @@ async def send_transaction_result_cancel(transaction: Transaction, admin_confirm
                                    admin_confirmation_message=admin_confirmation_message)
 
 
-async def _send_transaction_result(success: bool, transaction: Transaction,
-                                   admin_confirmation_message: Message) -> None:
+async def _send_transaction_result(
+        success: bool, transaction: Transaction,
+        admin_confirmation_message: Message) -> None:
     admin_message_template, client_message_template = (
         templates.REQUEST_FOR_REPLENISHMENT_CONFIRMED_TEMPLATE, texts.TRANSACTION_ACCEPTED) if success else (
         templates.REQUEST_FOR_REPLENISHMENT_CANCELED_TEMPLATE, texts.TRANSACTION_CANCELED

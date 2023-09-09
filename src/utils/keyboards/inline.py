@@ -67,7 +67,7 @@ def _fill_currencies_keyboard(keyboard: InlineKeyboardBuilder) -> None:
             callback_data=currency_button.callback
         ))
 
-        if currency_idx and not (currency_idx + 1) % 3:
+        if currency_idx and not (currency_idx + 1) % 4 or currency_idx == len(SUPPORTED_CURRENCIES) - 1:
             keyboard.row(*buttons_row)
             buttons_row.clear()
 

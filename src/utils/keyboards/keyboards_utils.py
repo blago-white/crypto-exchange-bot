@@ -18,3 +18,14 @@ def get_transaction_confirmation_keyboard(client_id: int) -> InlineKeyboardButto
     ))
 
     return transaction_inline_keyboard.as_markup()
+
+
+def get_wallet_verification_confirmation_keyboard(client_id: int) -> InlineKeyboardButton:
+    verification_inline_keyboard = InlineKeyboardBuilder()
+
+    verification_inline_keyboard.row(InlineKeyboardButton(
+        text=callback.VerifyUserWalletButton(extra_callback_data=str(client_id)).text,
+        callback_data=callback.VerifyUserWalletButton(extra_callback_data=str(client_id)).callback
+    ))
+
+    return verification_inline_keyboard.as_markup()

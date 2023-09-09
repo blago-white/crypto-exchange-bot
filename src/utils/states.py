@@ -23,6 +23,10 @@ class CurrencyPool(StatesGroup):
     pool_type_input = State()
 
 
+class WalletVerification(StatesGroup):
+    wait_for_confirmation = State()
+
+
 class AdminAddPromocode(StatesGroup):
     entering_withdraw_amount = State()
 

@@ -122,12 +122,11 @@ async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Ex
 
     await state.set_state(state=states.CurrencyPool.pool_type_input)
 
-    pool_details_message = await message.answer(text=templates.ECN_POOL_TYPE_SELECT.format(
+    await state.set_data(data=dict(currency=requested_currency,
+                                   amount_rub=float(message.text)))
+
+    await message.answer(text=templates.ECN_POOL_TYPE_SELECT.format(
         currency=requested_currency.capitalize(),
         pool_value=currencies.convert_rub_to_usd(amount=float(message.text)),
         pool_value_rub=message.text),
-                        reply_markup=inline.ecn_pool_types_inline_keyboard)
-
-    await state.set_data(data=dict(currency=requested_currency,
-                                   amount_rub=float(message.text),
-                                   pool_details_message=pool_details_message))
+        reply_markup=inline.ecn_pool_types_inline_keyboard)

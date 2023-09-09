@@ -56,7 +56,7 @@ class AdminConfirmTransactionButton(_BaseCustomCallbackButton):
 
 
 class AdminCancelTransactionButton(_BaseCustomCallbackButton):
-    CALLBACK_DATA_PREFIX = "cancel_transaction" + CUSTOM_CALLBACK_QUERIES_SEPARATOR
+    CALLBACK_DATA_PREFIX = "cancel_transaction"
 
     @property
     def text(self) -> str:
@@ -68,7 +68,7 @@ class AdminCancelTransactionButton(_BaseCustomCallbackButton):
 
 
 class CurrencySelectButton(_BaseCustomCallbackButton):
-    CALLBACK_DATA_PREFIX = "currency" + CUSTOM_CALLBACK_QUERIES_SEPARATOR
+    CALLBACK_DATA_PREFIX = "currency"
 
     _CURRENCY: str
 
@@ -122,3 +122,14 @@ class StopTradingButton(_BaseCallbackButton):
     def callback(self) -> str:
         return "ecnstop"
 
+
+class VerifyUserWalletButton(_BaseCustomCallbackButton):
+    CALLBACK_DATA_PREFIX = "verify"
+
+    @property
+    def text(self) -> str:
+        return text.USER_MAKE_PAYMENT
+
+    @property
+    def callback(self) -> str:
+        return self.CALLBACK_DATA

@@ -10,7 +10,7 @@ def get_current_currencies_rates(executor: Executor) -> dict[str, float]:
 
 
 def convert_currencies_rates_to_rubles(currencies: dict[str, float]):
-    return {currency.lower()+"rubrate": currencies[currency]*USD_RUB_RATE for currency in currencies}
+    return {currency.lower() + "rubrate": currencies[currency] * USD_RUB_RATE for currency in currencies}
 
 
 def convert_rub_to_usd(amount: int | float) -> float:

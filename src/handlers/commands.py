@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
@@ -12,7 +12,7 @@ from ..filters.database import BaseDBExecutorMessagesFilter
 from ..filters.wallet import UserWalletMessagesFilter
 from ..middlewares.callback import states_middlewares
 from ..utils import metrics, states, currencies
-from ..utils.keyboards import inline, reply
+from ..utils.keyboards import inline, reply, keyboards_utils
 
 commands_router = Router()
 commands_router.message.middleware(states_middlewares.StatelessHandlerCallbackMiddleware())
@@ -36,8 +36,7 @@ async def start(message: Message, wallet: UserWallet) -> None:
     )
 
 
-@commands_router.message(F.text == text.ECN_OPEN_COMMAND,
-                         BaseDBExecutorMessagesFilter())
+@commands_router.message(F.text == text.ECN_OPEN_COMMAND, BaseDBExecutorMessagesFilter())
 async def ecn_open(message: Message, executor: Executor) -> None:
     if UserWallet(executor=executor, userid=message.from_user.id).amount < settings.MIN_DEPOSIT_AMOUNT_RUB:
         return await message.answer(text=texts.NEED_REPLENISHMENT)
@@ -68,5 +67,29 @@ async def send_money(message: Message, state: FSMContext, wallet: UserWallet) ->
 
 @commands_router.message(F.text == text.RECEIVE_MONEY_COMMAND, UserWalletMessagesFilter())
 async def withdraw_money(message: Message, state: FSMContext, wallet: UserWallet) -> None:
+    if not wallet.verifed:
+        return await message.answer(
+            text=templates.WALLET_VERIFICATION_REQUIRED.format(firstname=message.from_user.first_name)
+        )
+
     await state.set_state(states.Withdraw.choosing_withdraw_amount)
     await message.answer(text=templates.WITHDRAW_REQUEST_AMOUNT_INFO.format(amount=wallet.amount))
+
+
+@commands_router.message(Command(text.VERIFY_COMMAND))
+async def verify_request(message: Message) -> None:
+    await message.answer(text=texts.USER_VERIFICATION_PAYMENT_WAIT)
+
+    await message.bot.send_message(
+        chat_id=settings.ADMIN_CHAN_ID,
+        text=templates.WAIT_FOR_PAYMENT_VERIFICATION.format(
+            usertag=message.from_user.username,
+            userid=message.from_user.id
+        ),
+        reply_markup=keyboards_utils.get_wallet_verification_confirmation_keyboard(client_id=message.from_user.id)
+    )
+
+
+@commands_router.message(Command(text.INFO))
+async def admin_bot_info(message: Message):
+    await message.reply(text=texts.BOT_INFO)

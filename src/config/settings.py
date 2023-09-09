@@ -4,7 +4,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 CONFIG_FILE = "botconfig.ini"
 
-PROMOCODE_ALLOWED_SYMBOLS = set(string.ascii_letters+string.digits)
+PROMOCODE_ALLOWED_SYMBOLS = set(string.ascii_letters + string.digits)
 
 PROMOCODE_LENGTH = 16
 

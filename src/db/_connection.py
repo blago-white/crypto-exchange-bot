@@ -12,9 +12,9 @@ class DBConnector:
 
     def get_new_connection(self):
         self._connection = psycopg2.connect(
-                database=self._DBCONFIG.database,
-                user=self._DBCONFIG.user,
-                password=self._DBCONFIG.password
+            database=self._DBCONFIG.database,
+            user=self._DBCONFIG.user,
+            password=self._DBCONFIG.password
         )
         return self.get_connection()
 

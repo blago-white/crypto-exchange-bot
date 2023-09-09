@@ -61,3 +61,9 @@ NOT_ENOUGH_MONEY = "⛔ Недостаточно средств на счету!
 POOL_CURRENCY_DOES_NOT_EXISTS = "❌ <b>Неверно введена валюта, попробуйте еще раз!</b>"
 
 TRADING_ENDED = "✅ <b>Спасибо, что торгуете с нами!</b>"
+
+USER_VERIFY_SELF_WALLET = "✅ Ваш кошелек верифицирован!"
+
+USER_VERIFICATION_PAYMENT_WAIT = f"⚠ Оператор уведомлен, вы можете отправлять чек в @{settings.SUPPORT_BOT_TAG}!"
+
+BOT_INFO = "❓ С помошью этого бота вы можете <b>зарабатывать на криптовалютах</b>"

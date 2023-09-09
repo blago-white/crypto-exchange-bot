@@ -6,10 +6,10 @@ from aiogram.types import CallbackQuery
 
 class StatelessHandlerCallbackMiddleware(BaseMiddleware):
     async def __call__(
-        self,
-        handler: Callable[[CallbackQuery, dict[str, Any]], Awaitable[Any]],
-        event: CallbackQuery,
-        data: dict[str, Any]
+            self,
+            handler: Callable[[CallbackQuery, dict[str, Any]], Awaitable[Any]],
+            event: CallbackQuery,
+            data: dict[str, Any]
     ) -> Any:
         await data.get("state").clear()
 

@@ -177,6 +177,16 @@ class UserWallet(_BaseWalletModel):
 
         return amount[0]
 
+    @property
+    @_BaseWalletModel._model_auth_required
+    def verifed(self) -> bool:
+        return self._EXECUTOR.fetch(sql=f"SELECT verified FROM wallets WHERE userid={self._USERID}")[0]
+
+    @verifed.setter
+    @_BaseWalletModel._model_auth_required
+    def verifed(self, _) -> None:
+        self._EXECUTOR.insert(sql=f"UPDATE wallets SET verified=true WHERE userid={self._USERID}")
+
     def save(self):
         if (self._authorized is None) or self.authorized:
             return

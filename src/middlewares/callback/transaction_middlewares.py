@@ -13,10 +13,10 @@ from src.utils.transactions import Transaction
 
 class TransactionCallbackDataMiddleware(BaseMiddleware):
     async def __call__(
-        self,
-        handler: Callable[[CallbackQuery, dict[str, Any]], Awaitable[Any]],
-        event: CallbackQuery,
-        data: dict[str, Any]
+            self,
+            handler: Callable[[CallbackQuery, dict[str, Any]], Awaitable[Any]],
+            event: CallbackQuery,
+            data: dict[str, Any]
     ) -> Any:
         client_id = int(event.data.split(settings.CUSTOM_CALLBACK_QUERIES_SEPARATOR)[-1])
         user_state: FSMContext = data["state"]
@@ -39,5 +39,5 @@ class TransactionCallbackDataMiddleware(BaseMiddleware):
     @staticmethod
     def _transaction_actual(transaction: Transaction) -> bool:
         return (
-            datetime.datetime.now() - transaction.initialization_time
+                datetime.datetime.now() - transaction.initialization_time
         ).total_seconds() < settings.TRANSACTION_COMLETION_TIME_SECONDS
