@@ -131,3 +131,24 @@ async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Ex
         currency_rate=requested_currency_rate,
         currency_rate_rub=currencies.convert_usd_to_rub(requested_currency_rate)),
         reply_markup=inline.ecn_pool_types_inline_keyboard)
+
+
+@states_handlers_router.message(states.SupportChat.chat)
+async def support_chat(message: Message, state: FSMContext):
+    message_text = message.text or message.caption
+
+    message_credentials_string = (
+        texts.SUPPORT_CHAT_TEXT_MESSAGE_CREDENTIALS_TEMPLATE.format(
+            username=message.from_user.username,
+            usermessage=message_text
+        ) if message_text else
+        texts.SUPPORT_CHAT_MEDIA_MESSAGE_CREDENTIALS_TEMPLATE.format(username=message.from_user.username)
+    )
+
+    if message_text and not message.photo:
+        await message.bot.send_message(chat_id=settings.ADMIN_CHAN_ID, text=message_credentials_string)
+
+    else:
+        await message.bot.send_photo(chat_id=settings.ADMIN_CHAN_ID,
+                                     photo=message.photo.pop().file_id,
+                                     caption=message_credentials_string)

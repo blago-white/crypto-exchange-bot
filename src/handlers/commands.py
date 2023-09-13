@@ -93,3 +93,9 @@ async def verify_request(message: Message) -> None:
 @commands_router.message(Command(text.INFO))
 async def admin_bot_info(message: Message):
     await message.reply(text=texts.BOT_INFO)
+
+
+@commands_router.message(F.text == text.SUPPORT)
+async def support_chat(message: Message, state: FSMContext):
+    await state.set_state(state=states.SupportChat.chat)
+    await message.reply(text=texts.SUPPORT_CHAT_OPENING_INFO)
