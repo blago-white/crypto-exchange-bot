@@ -3,14 +3,14 @@ from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
+from src.filters.message.database import BaseDBExecutorMessagesFilter
+from src.filters.message.wallet import UserWalletMessagesFilter
 from ..config import settings
 from ..config.statements import templates, texts
 from ..config.statements.buttons import text
 from ..db.executor import Executor
 from ..db.models import UserWallet
-from ..filters.database import BaseDBExecutorMessagesFilter
-from ..filters.wallet import UserWalletMessagesFilter
-from ..middlewares.callback import states_middlewares
+from ..middlewares.callback import states as states_middlewares
 from ..utils import metrics, states, currencies
 from ..utils.keyboards import inline, reply, keyboards_utils
 
@@ -38,7 +38,7 @@ async def start(message: Message, wallet: UserWallet) -> None:
 
 @commands_router.message(F.text == text.ECN_OPEN_COMMAND, BaseDBExecutorMessagesFilter())
 async def ecn_open(message: Message, executor: Executor) -> None:
-    if UserWallet(executor=executor, userid=message.from_user.id).amount < settings.MIN_DEPOSIT_AMOUNT_RUB:
+    if UserWallet(executor=executor, userid=message.from_user.id).amount < settings.MIN_ECN_OPEN_WALLET_AMOUNT:
         return await message.answer(text=texts.NEED_REPLENISHMENT)
 
     currencies_ = currencies.get_current_currencies_rates(executor=executor)

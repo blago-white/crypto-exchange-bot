@@ -85,15 +85,14 @@ ECN_POOL_VOLUME_INPUT_INFO = f"""
 
 ECN_POOL_TYPE_SELECT = f"""
 🔸 <b>{'{currency}'}/{settings.ALTERNATIVE_CURRENCY}</b>
-
-💸 Стоимость: <b>{'{pool_value}'} {settings.ALTERNATIVE_CURRENCY} ~</b> <em>({'{pool_value_rub}'} RUB)</em>
+💸 Стоимость: <b>{'{currency_rate}'} {settings.ALTERNATIVE_CURRENCY} ~</b> <em>({'{currency_rate_rub}'} RUB)</em>
 
 Повышение x2
 Не изменится x10
 Понижение x2
 """
 
-POOL_STARTED = f"💹 <b>Пул на {'{pool_amount_rub}'} RUB длительностью {settings.POOL_DURATION} секунд начат!</b>"
+POOL_STARTED = f"💹 <b>Пул на {'{pool_amount_rub}'} RUB начат!</b>\n\n⏰ <b>{'{elapsed_time}'}/30 секунд</b>"
 
 POOL_ENDED_INFO = f"""
 {'{pool_type}'}

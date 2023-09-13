@@ -3,7 +3,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.config.settings import SUPPORTED_CURRENCIES
 from src.config.statements.buttons import links, callback
-from src.utils import pools
+from src.utils.pools import types as pooltypes
 
 account_inline_keyboard = InlineKeyboardBuilder()
 agreement_inline_keyboard = InlineKeyboardBuilder()
@@ -30,18 +30,18 @@ agreement_inline_keyboard.row(types.InlineKeyboardButton(
 ))
 
 ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
-    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeUp).text,
-    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeUp).callback
+    text=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeUp).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeUp).callback
 ))
 
 ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
-    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeDown).text,
-    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeDown).callback
+    text=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeDown).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeDown).callback
 ))
 
 ecn_pool_types_inline_keyboard.row(types.InlineKeyboardButton(
-    text=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeSame).text,
-    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pools.ECNPoolTypeSame).callback
+    text=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeSame).text,
+    callback_data=callback.ECNPoolTypeSelectButton(pool_type=pooltypes.ECNPoolTypeSame).callback
 ))
 
 ecn_pool_continue_inline_keyboard.row(

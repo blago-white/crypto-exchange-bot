@@ -14,6 +14,10 @@ class _BaseModel(metaclass=ABCMeta):
     def __init__(self, executor: Executor = None):
         self._EXECUTOR = executor
 
+    @property
+    def executor(self):
+        return self._EXECUTOR
+
 
 class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
     _EXECUTOR: Executor
@@ -56,7 +60,7 @@ class _BaseWalletModel(_BaseModel, metaclass=ABCMeta):
 
 class Currencies(_BaseModel):
     _EXECUTOR: Executor
-    _last_rates_update: float
+    _last_rates_update_time: float
     _currencies: dict[str, float]
 
     def __new__(cls, executor: Executor = None):
@@ -72,28 +76,28 @@ class Currencies(_BaseModel):
         return cls.instance
 
     @staticmethod
-    def _rate_updater(method):
-        def wrapp(*args, **kwargs):
+    def _update_rates_on_call(method):
+        def _update_rates_on_call_wrapper(*args, **kwargs):
             currencies_model: Currencies = args[0]
 
-            if time.time() - currencies_model._last_rates_update > settings.CURRENCIES_RATES_UPDATING_COOLDOWN:
+            if time.time() - currencies_model._last_rates_update_time > settings.CURRENCIES_RATES_UPDATING_COOLDOWN:
                 currencies_model._update_currencies_rates()
 
             return method(*args, **kwargs)
 
-        return wrapp
+        return _update_rates_on_call_wrapper
 
     @property
-    @_rate_updater
+    @_update_rates_on_call
     def currencies(self) -> dict[str, float]:
         return self._currencies
 
-    @_rate_updater
+    @_update_rates_on_call
     def get_rate(self, currency) -> float:
         return self._currencies[currency]
 
     def _update_currencies_rates(self):
-        if ("_last_rates_update" in self.__dict__
+        if ("_last_rates_update_time" in self.__dict__
                 and self._get_time_after_updating() < settings.CURRENCIES_RATES_UPDATING_COOLDOWN):
             return
 
@@ -108,20 +112,18 @@ class Currencies(_BaseModel):
             currency: float(rate)
             for currency, rate in self._EXECUTOR.fetchall(sql="SELECT * FROM currencies;")
         }
-        self._last_rates_update = time.time()
+        self._last_rates_update_time = time.time()
 
     def _get_time_after_updating(self):
-        return time.time() - self._last_rates_update
+        return time.time() - self._last_rates_update_time
 
     @staticmethod
     def _get_random_currency_incrementer(currency: str, rate: float) -> float:
-        incrementer = random.uniform(-rate / 100, rate / 100)
+        incrementer, currency_rate_boundaries = (random.uniform(-rate / 100, rate / 100),
+                                                 settings.CURRENCIES_PRICES_BOUNDARIES[currency.capitalize()])
 
-        if rate <= abs(incrementer) or settings.MAX_CURRENCIES_PRICES[currency.capitalize()] < (rate + incrementer):
+        if min(currency_rate_boundaries) < rate + incrementer < max(currency_rate_boundaries):
             incrementer = -incrementer
-
-        elif incrementer < 0 and settings.MIN_CURRENCIES_PRICES[currency.capitalize()] > (rate + incrementer):
-            incrementer = abs(incrementer)
 
         return incrementer
 

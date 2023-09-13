@@ -4,14 +4,14 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 
+from src.filters.message.database import BaseDBExecutorMessagesFilter
+from src.filters.message.wallet import UserWalletMessagesFilter
 from ..config import settings
 from ..config.statements import templates
 from ..config.statements import texts
 from ..db import dbvalidators
 from ..db.executor import Executor
-from ..db.models import UserWallet, Promocode
-from ..filters.database import BaseDBExecutorMessagesFilter
-from ..filters.wallet import UserWalletMessagesFilter
+from ..db.models import UserWallet, Promocode, Currencies
 from ..utils import states, transactions, validators, currencies
 from ..utils.keyboards import reply, keyboards_utils, inline
 
@@ -115,18 +115,19 @@ async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Ex
     if int(message.text) > UserWallet(executor=executor, userid=message.from_user.id).amount:
         return await message.answer(text=texts.NOT_ENOUGH_MONEY)
 
-    requested_currency: str | None = (await state.get_data()).get("currency")
+    requested_currency_name: str | None = (await state.get_data()).get("currency")
+    requested_currency_rate = Currencies(executor=executor).get_rate(currency=requested_currency_name)
 
-    if not requested_currency:
+    if not requested_currency_name:
         return await message.answer(text=texts.POOL_CURRENCY_DOES_NOT_EXISTS)
 
     await state.set_state(state=states.CurrencyPool.pool_type_input)
 
-    await state.set_data(data=dict(currency=requested_currency,
+    await state.set_data(data=dict(currency=requested_currency_name,
                                    amount_rub=float(message.text)))
 
     await message.answer(text=templates.ECN_POOL_TYPE_SELECT.format(
-        currency=requested_currency.capitalize(),
-        pool_value=currencies.convert_rub_to_usd(amount=float(message.text)),
-        pool_value_rub=message.text),
+        currency=requested_currency_name.capitalize(),
+        currency_rate=requested_currency_rate,
+        currency_rate_rub=currencies.convert_usd_to_rub(requested_currency_rate)),
         reply_markup=inline.ecn_pool_types_inline_keyboard)

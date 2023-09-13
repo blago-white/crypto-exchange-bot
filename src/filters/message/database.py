@@ -3,7 +3,7 @@ from typing import Any
 from aiogram.filters import Filter
 from aiogram.types import Message
 
-from ..db import executor
+from src.db import executor
 
 
 class BaseDBExecutorMessagesFilter(Filter):

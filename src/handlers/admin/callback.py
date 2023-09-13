@@ -5,8 +5,8 @@ from src.config.statements.buttons import callback as callback_buttons
 from src.db.executor import Executor
 from src.db.models import UserWallet
 from src.filters.admin import AdminCallbackFilter
-from src.filters.database import BaseDBExecutorMessagesFilter
-from src.middlewares.callback.transaction_middlewares import TransactionCallbackDataMiddleware
+from src.filters.message.database import BaseDBExecutorMessagesFilter
+from src.middlewares.callback.transaction import TransactionCallbackDataMiddleware
 from src.utils import messages
 from src.utils.transactions import Transaction
 

@@ -1,0 +1,2 @@
+class NotEnoughMoneyForPool(BaseException):
+    pass

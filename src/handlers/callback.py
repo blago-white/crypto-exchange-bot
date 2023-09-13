@@ -1,28 +1,28 @@
-import asyncio
-
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from ..config.settings import CUSTOM_CALLBACK_QUERIES_SEPARATOR, POOL_DURATION
+from src.filters.message.database import BaseDBExecutorMessagesFilter
+from src.filters.message.wallet import UserWalletMessagesFilter
+from ..config.settings import CUSTOM_CALLBACK_QUERIES_SEPARATOR
 from ..config.statements import templates
 from ..config.statements.buttons import callback as callback_buttons
 from ..config.statements.buttons.text import NEXT_POOL_QUESTION
 from ..config.statements.texts import TRADING_ENDED, ENTER_PROMO, USER_VERIFY_SELF_WALLET, NOT_ENOUGH_MONEY
 from ..db.executor import Executor
-from ..db.models import UserWallet, Currencies
-from ..filters.database import BaseDBExecutorMessagesFilter
-from ..filters.wallet import UserWalletMessagesFilter
-from ..utils import pools, currencies
+from ..db.models import UserWallet
+from ..middlewares.callback import autoanswer
+from ..utils import currencies, messages, exceptions
 from ..utils.keyboards import inline
+from ..utils.pools import utils
 from ..utils.states import EnteringPromocode, CurrencyPool
 
 callback_router = Router()
+callback_router.callback_query.middleware(autoanswer.AutoAnswerCallbackMiddleware())
 
 
 @callback_router.callback_query(F.data == callback_buttons.InsertPromoButton().callback)
 async def promocode(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
     await state.set_state(EnteringPromocode.entering_promocode)
     await callback.message.answer(text=ENTER_PROMO)
 
@@ -32,88 +32,32 @@ async def promocode(callback: CallbackQuery, state: FSMContext):
     UserWalletMessagesFilter()
 )
 async def ecn_currency_select(callback: CallbackQuery, state: FSMContext, wallet: UserWallet):
-    await callback.answer()
-
     currency = callback.data.split(CUSTOM_CALLBACK_QUERIES_SEPARATOR)[-1]
 
     await state.set_state(state=CurrencyPool.pool_volume_input)
-    await state.set_data(
-        data=dict(currency=currency)
-    )
+    await state.set_data(data=dict(currency=currency))
 
-    await callback.message.answer(
-        text=templates.ECN_POOL_VOLUME_INPUT_INFO.format(
-            currency=currency.capitalize(), user_wallet_amount=wallet.amount
-        )
+    await callback.message.answer(text=templates.ECN_POOL_VOLUME_INPUT_INFO.format(
+        currency=currency.capitalize(), user_wallet_amount=wallet.amount
+    )
     )
 
 
 @callback_router.callback_query(CurrencyPool.pool_type_input, BaseDBExecutorMessagesFilter())
-async def ecn_pool_type_select(callback: CallbackQuery, state: FSMContext, executor: Executor):
-    await callback.answer()
+async def start_ecn_pool(callback: CallbackQuery, state: FSMContext, executor: Executor):
+    await state.set_state(state=None)
 
-    currencies_model, user_wallet = (
-        Currencies(executor=executor), UserWallet(executor=executor, userid=callback.from_user.id)
-    )
+    try:
+        await messages.make_ecn_pool(start_pool_message=callback.message,
+                                     pool=await utils.get_pool(callback=callback, user_state=state),
+                                     user_wallet=UserWallet(executor=executor, userid=callback.from_user.id))
 
-    pool_type: pools.AbstractECNPoolType = pools.get_pool_type_by_code(callback.data)
-    pool_data: dict = await state.get_data()
+    except exceptions.NotEnoughMoneyForPool:
+        return await callback.message.answer(text=NOT_ENOUGH_MONEY)
 
     await state.clear()
 
-    pool_currency, pool_amount_rub = (
-        str(pool_data.get("currency")),
-        float(pool_data.get("amount_rub"))
-    )
-
-    if pool_type == pools.ECNPoolTypeSame:
-        pool_amount_rub *= 10
-
-    if user_wallet.amount < pool_amount_rub:
-        return await callback.message.answer(text=NOT_ENOUGH_MONEY)
-
-    start_currency_rate: float = float(currencies_model.get_rate(currency=pool_currency))
-
-    pool_start_info = await callback.message.answer(text=templates.POOL_STARTED.format(pool_amount_rub=pool_amount_rub))
-
-    await asyncio.sleep(POOL_DURATION)
-
-    await pool_start_info.delete()
-
-    end_currency_rate = float(currencies_model.get_rate(currency=pool_currency))
-    pool_currency_rate_delta = end_currency_rate - start_currency_rate
-
-    pool_status = pools.pool_is_successfully(pool_type=pool_type, currency_rate_delta=pool_currency_rate_delta)
-    pools.apply_pool_result_to_wallet(pool_status=pool_status, pool_value=pool_amount_rub, user_wallet=user_wallet)
-
-    await callback.message.edit_text(text=templates.POOL_ENDED_INFO.format(
-        pool_type=pool_type.text,
-        currency=pool_currency,
-        pool_amount_rub=pool_amount_rub,
-        start_currency_rate_usd=start_currency_rate,
-        start_currency_rate_rub=currencies.convert_usd_to_rub(amount=start_currency_rate),
-        end_currency_rate_usd=end_currency_rate,
-        end_currency_rate_rub=currencies.convert_usd_to_rub(amount=end_currency_rate)
-    ))
-
-    pool_result_template = (
-        templates.POOL_ENDED_UNSUCCESSFULLY if not pool_status else templates.POOL_ENDED_SUCCESSFULLY
-    )
-
-    await callback.message.answer(
-        text=pool_result_template.format(
-            pool_type_icon=pool_type.icon,
-            pool_result=pools.get_pool_result_description(
-                pool_currency_rate_delta=end_currency_rate - start_currency_rate),
-            pool_amount_rub=pool_amount_rub,
-            wallet_amount=user_wallet.amount
-        )
-    )
-
-    await callback.message.answer(
-        text=NEXT_POOL_QUESTION,
-        reply_markup=inline.ecn_pool_continue_inline_keyboard
-    )
+    await callback.message.answer(text=NEXT_POOL_QUESTION, reply_markup=inline.ecn_pool_continue_inline_keyboard)
 
 
 @callback_router.callback_query(
@@ -121,8 +65,6 @@ async def ecn_pool_type_select(callback: CallbackQuery, state: FSMContext, execu
     BaseDBExecutorMessagesFilter()
 )
 async def continue_trading(callback: CallbackQuery, state: FSMContext, executor: Executor):
-    await callback.answer()
-
     await state.clear()
 
     await callback.message.delete()
@@ -139,7 +81,6 @@ async def continue_trading(callback: CallbackQuery, state: FSMContext, executor:
 
 @callback_router.callback_query(F.data == callback_buttons.StopTradingButton().callback)
 async def stop_trading(callback: CallbackQuery, state: FSMContext):
-    await callback.answer()
     await state.clear()
     await callback.message.delete()
     await callback.message.answer(text=TRADING_ENDED)

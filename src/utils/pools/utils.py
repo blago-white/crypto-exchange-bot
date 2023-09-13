@@ -1,37 +1,24 @@
-from abc import ABCMeta
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery
 
-from src.config.statements.buttons.text import ECN_POOL_UP, ECN_POOL_DOWN, ECN_POOL_SAME
 from src.db.models import UserWallet
-
-
-class AbstractECNPoolType(metaclass=ABCMeta):
-    text: str
-    callback: str
-    icon: str
-
-
-class ECNPoolTypeUp(AbstractECNPoolType):
-    text = ECN_POOL_UP
-    callback = "poolup"
-    icon = "🔼"
-
-
-class ECNPoolTypeDown(AbstractECNPoolType):
-    text = ECN_POOL_DOWN
-    callback = "pooldown"
-    icon = "🔽"
-
-
-class ECNPoolTypeSame(AbstractECNPoolType):
-    text = ECN_POOL_SAME
-    callback = "poolsame"
-    icon = "⏸"
+from . import ECNPool
+from .types import AbstractECNPoolType, ECNPoolTypeUp, ECNPoolTypeDown, ECNPoolTypeSame
 
 
 def pool_is_successfully(pool_type: AbstractECNPoolType, currency_rate_delta: float) -> bool:
     return ((pool_type == ECNPoolTypeDown and currency_rate_delta < 0) or
             (pool_type == ECNPoolTypeUp and currency_rate_delta > 0) or
             (pool_type == ECNPoolTypeSame and currency_rate_delta == 0))
+
+
+async def get_pool(callback: CallbackQuery, user_state: FSMContext) -> ECNPool:
+    pool_type, pool_data = get_pool_type_by_code(callback.data), await user_state.get_data()
+
+    pool_currency, pool_amount_rub = (str(pool_data.get("currency")),
+                                      calc_winning_amount(float(pool_data.get("amount_rub")), pool_type))
+
+    return ECNPool(pool_type=pool_type, pool_currency=pool_currency, pool_amount=pool_amount_rub)
 
 
 def get_pool_result_description(pool_currency_rate_delta: float) -> str:
@@ -53,3 +40,7 @@ def apply_pool_result_to_wallet(pool_status: bool, pool_value: float, user_walle
         return user_wallet + abs(pool_value)
 
     user_wallet - abs(pool_value)
+
+
+def calc_winning_amount(pool_value: float, pool_type: ECNPoolTypeUp) -> float:
+    return pool_value * pool_type.winning_ratio

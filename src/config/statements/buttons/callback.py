@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 from src.config.settings import CUSTOM_CALLBACK_QUERIES_SEPARATOR
-from src.utils import pools
+from src.utils.pools import types
 from . import text
 
 
@@ -86,10 +86,10 @@ class CurrencySelectButton(_BaseCustomCallbackButton):
 
 
 class ECNPoolTypeSelectButton(_BaseCallbackButton):
-    _POOL_TYPE: pools.AbstractECNPoolType
+    _POOL_TYPE: types.AbstractECNPoolType
 
-    def __init__(self, pool_type: pools.AbstractECNPoolType):
-        if type(pool_type) is pools.AbstractECNPoolType:
+    def __init__(self, pool_type: types.AbstractECNPoolType):
+        if type(pool_type) is types.AbstractECNPoolType:
             raise "The use of the abstract class is prohibited"
 
         self._POOL_TYPE = pool_type
