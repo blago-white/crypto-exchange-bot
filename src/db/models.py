@@ -216,7 +216,7 @@ class Promocode:
 
     @staticmethod
     def all(executor: Executor) -> list[tuple[str, int]]:
-        return executor.fetchall(sql="SELECT * FROM promocodes;")
+        return executor.fetchall(sql="SELECT * FROM promocodes ORDER BY discount;")
 
     def save_promocode(self, discount: int) -> None:
         if not promocode_valid(promocode=self._PROMOCODE) or not promocode_percentage_valid(percentage=discount):
@@ -234,3 +234,6 @@ class Promocode:
 
     def get_promocode_discount(self) -> int:
         return self._EXECUTOR.fetch(sql=f"SELECT discount FROM promocodes WHERE promocode='{self._PROMOCODE}'")[0]
+
+    def delete(self) -> None:
+        self._EXECUTOR.insert(sql=f"DELETE FROM promocodes WHERE promocode='{self._PROMOCODE}'")

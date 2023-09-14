@@ -28,7 +28,7 @@ class WalletVerification(StatesGroup):
 
 
 class AdminAddPromocode(StatesGroup):
-    entering_withdraw_amount = State()
+    entering_discount = State()
 
 
 class SupportChat(StatesGroup):
@@ -37,6 +37,10 @@ class SupportChat(StatesGroup):
 
 class AdminSupportChatAnswering(StatesGroup):
     answering = State()
+
+
+class AdminDeletePromocode(StatesGroup):
+    choosing_promocode = State()
 
 
 def get_user_stortage_key(userid: int) -> StorageKey:

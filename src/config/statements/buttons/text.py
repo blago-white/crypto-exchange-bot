@@ -18,7 +18,7 @@ ACCEPT_TRANSACTION = "✅ Подтвердить"
 
 CANCEL_TRANSACTION = "❌ Отмена"
 
-NEW_PROMO_COMMAND = "newpromo"
+ADMIN_NEW_PROMO = "newpromo"
 
 INFO = "info"
 
@@ -43,3 +43,5 @@ ADMIN_SUPPORT_ANSWER = "💬 Ответить клиенту"
 ADMIN_END_ANSWERING_COMMAND = "stop"
 
 ADMIN_LIST_PROMOS = "listpromo"
+
+ADMIN_DEL_PROMO = "delpromo"

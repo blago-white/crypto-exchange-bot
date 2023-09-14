@@ -153,7 +153,6 @@ ANSWER_FROM_SUPPORT_FOR_USER_TEMPLATE = "‼ <b>Вам ответил админ
 
 PROMOS_LIST_TEMPLATE = """
 💯 Созданные промокоды:
-
 {promocodes}
 """
 
