@@ -214,6 +214,10 @@ class Promocode:
     def title(self):
         return self._PROMOCODE
 
+    @staticmethod
+    def all(executor: Executor) -> list[tuple[str, int]]:
+        return executor.fetchall(sql="SELECT * FROM promocodes;")
+
     def save_promocode(self, discount: int) -> None:
         if not promocode_valid(promocode=self._PROMOCODE) or not promocode_percentage_valid(percentage=discount):
             raise exceptions.PromocodeNotCorrectError()

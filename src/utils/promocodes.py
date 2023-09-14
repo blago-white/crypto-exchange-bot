@@ -2,6 +2,7 @@ import random
 import string
 
 from src.config.settings import PROMOCODE_LENGTH
+from src.config.statements import templates
 from src.db import models
 from src.db.executor import Executor
 
@@ -17,3 +18,11 @@ def save_promocode(executor: Executor, discount: int) -> str:
     ).save_promocode(discount=int(discount))
 
     return promo_title
+
+
+def get_promocodes_list(promocodes: list[tuple[str, int]]) -> str:
+    return templates.PROMOS_LIST_TEMPLATE.format(
+        promocodes="".join([templates.PROMO_LIST_ITEM_TEMPLATE.format(
+            promocode=promocode, discount=discount
+        ) for promocode, discount in promocodes])
+    )

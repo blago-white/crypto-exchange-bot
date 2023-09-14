@@ -150,3 +150,11 @@ SUPPORT_CHAT_TEXT_MESSAGE_CREDENTIALS_TEMPLATE = ("<b>Пользователь @
 SUPPORT_CHAT_MEDIA_MESSAGE_CREDENTIALS_TEMPLATE = "<b>Пользователь @{username} отправил в поддержку файл</b>"
 
 ANSWER_FROM_SUPPORT_FOR_USER_TEMPLATE = "‼ <b>Вам ответил администратор:</b>\n{adminanswer}"
+
+PROMOS_LIST_TEMPLATE = """
+💯 Созданные промокоды:
+
+{promocodes}
+"""
+
+PROMO_LIST_ITEM_TEMPLATE = "🔸 <code>{promocode}</code> - <b>{discount}%</b>\n"

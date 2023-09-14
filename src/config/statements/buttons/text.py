@@ -41,3 +41,5 @@ USER_MAKE_PAYMENT = "✅ Пользователь совершил платеж!
 ADMIN_SUPPORT_ANSWER = "💬 Ответить клиенту"
 
 ADMIN_END_ANSWERING_COMMAND = "stop"
+
+ADMIN_LIST_PROMOS = "listpromo"

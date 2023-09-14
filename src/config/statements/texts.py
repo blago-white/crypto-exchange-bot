@@ -46,7 +46,8 @@ ADMIN_PROMO_NOT_CORRECT = f"""
 """
 
 ADMIN_COMMANDS_INFO = f"""
-❓ <em>С помощью этого бота вы можете добавить промокод используя</em> /{text.NEW_PROMO_COMMAND}
+❓ С помощью этого бота вы можете добавить промокод используя /{text.NEW_PROMO_COMMAND}
+Просмотр всех промокодов - /{text.ADMIN_LIST_PROMOS}
 """
 
 PROMOCODE_NOT_CORRECT = "❌ Введен <b>неверный промокод!</b>"
