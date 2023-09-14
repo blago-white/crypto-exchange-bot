@@ -133,3 +133,15 @@ class VerifyUserWalletButton(_BaseCustomCallbackButton):
     @property
     def callback(self) -> str:
         return self.CALLBACK_DATA
+
+
+class AdminSupportAnsweringButton(_BaseCustomCallbackButton):
+    CALLBACK_DATA_PREFIX = "support_answer"
+
+    @property
+    def text(self) -> str:
+        return text.ADMIN_SUPPORT_ANSWER
+
+    @property
+    def callback(self) -> str:
+        return self.CALLBACK_DATA

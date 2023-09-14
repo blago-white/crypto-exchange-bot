@@ -15,10 +15,7 @@ account_inline_keyboard.row(types.InlineKeyboardButton(
     text=links.MainChannelLink.text(),
     url=links.MainChannelLink.url()
 ))
-account_inline_keyboard.row(types.InlineKeyboardButton(
-    text=links.SupportLink.text(),
-    url=links.SupportLink.url()
-))
+
 account_inline_keyboard.row(types.InlineKeyboardButton(
     text=callback.InsertPromoButton().text,
     callback_data=callback.InsertPromoButton().callback

@@ -2,10 +2,11 @@ import asyncio
 
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message
 
 from src.filters.message.database import BaseDBExecutorMessagesFilter
 from src.filters.message.wallet import UserWalletMessagesFilter
+from .commands import support_chat as support_chat_command_handler
 from ..config import settings
 from ..config.statements import templates
 from ..config.statements import texts
@@ -30,12 +31,10 @@ async def make_transaction(message: Message, state: FSMContext) -> None:
     )
 
     await state.set_state(states.Replenishment.wait_payment_confirmation)
-
     await state.set_data(data=dict(transaction=transaction))
 
     await message.answer(
-        text=templates.REPLENISHMENT_REQUEST_TEMPLATE.format(amount=transaction.amount),
-        reply_markup=ReplyKeyboardRemove()
+        text=templates.REPLENISHMENT_REQUEST_TEMPLATE.format(amount=transaction.amount)
     )
 
     await message.bot.send_message(
@@ -50,6 +49,8 @@ async def make_transaction(message: Message, state: FSMContext) -> None:
             client_id=message.from_user.id
         )
     )
+
+    await support_chat_command_handler(message=message, state=state)
 
     await asyncio.sleep(settings.TRANSACTION_COMLETION_TIME_SECONDS)
 
@@ -135,20 +136,35 @@ async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Ex
 
 @states_handlers_router.message(states.SupportChat.chat)
 async def support_chat(message: Message, state: FSMContext):
-    message_text = message.text or message.caption
+    message_text: str | None = message.text or message.caption
+    message_file_id: str | None = (message.photo.pop().file_id if message.photo else None
+                                   ) or (message.document.file_id if message.document else None)
 
-    message_credentials_string = (
-        texts.SUPPORT_CHAT_TEXT_MESSAGE_CREDENTIALS_TEMPLATE.format(
+    message_credentials_string, admin_answering_keyboard = (
+        templates.SUPPORT_CHAT_TEXT_MESSAGE_CREDENTIALS_TEMPLATE.format(
             username=message.from_user.username,
             usermessage=message_text
         ) if message_text else
-        texts.SUPPORT_CHAT_MEDIA_MESSAGE_CREDENTIALS_TEMPLATE.format(username=message.from_user.username)
+        templates.SUPPORT_CHAT_MEDIA_MESSAGE_CREDENTIALS_TEMPLATE.format(username=message.from_user.username),
+        keyboards_utils.get_support_answering_keyboard(client_id=message.from_user.id)
     )
 
-    if message_text and not message.photo:
-        await message.bot.send_message(chat_id=settings.ADMIN_CHAN_ID, text=message_credentials_string)
+    if not message_text and not message_file_id:
+        return
 
-    else:
+    if not message_file_id:
+        return await message.bot.send_message(chat_id=settings.ADMIN_CHAN_ID,
+                                              text=message_credentials_string,
+                                              reply_markup=admin_answering_keyboard)
+
+    elif message.photo:
         await message.bot.send_photo(chat_id=settings.ADMIN_CHAN_ID,
-                                     photo=message.photo.pop().file_id,
-                                     caption=message_credentials_string)
+                                     photo=message_file_id,
+                                     caption=message_credentials_string,
+                                     reply_markup=admin_answering_keyboard)
+
+    elif message.document:
+        await message.bot.send_document(chat_id=settings.ADMIN_CHAN_ID,
+                                        document=message_file_id,
+                                        caption=message_credentials_string,
+                                        reply_markup=admin_answering_keyboard)

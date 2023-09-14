@@ -9,7 +9,7 @@ from src.db.executor import Executor
 from src.filters.admin import AdminFilter
 from src.filters.message.database import BaseDBExecutorMessagesFilter
 from src.utils.promocodes import save_promocode as save_promocode_to_db
-from src.utils.states import AdminAddPromocode
+from src.utils.states import AdminAddPromocode, AdminSupportChatAnswering
 
 admin_states_router = Router()
 admin_states_router.message.filter(AdminFilter())
@@ -26,4 +26,17 @@ async def save_promocode(message: Message, state: FSMContext, executor: Executor
 
     await message.reply(
         text=templates.ADMIN_PROMO_SAVED.format(promo_title=promo_title, discount=message.text)
+    )
+
+
+@admin_states_router.message(AdminSupportChatAnswering.answering)
+async def answer_for_client(message: Message, state: FSMContext):
+    client_id = (await state.get_data()).get("client_id")
+
+    if not client_id:
+        return
+
+    await message.bot.send_message(
+        chat_id=client_id,
+        text=templates.ANSWER_FROM_SUPPORT_FOR_USER_TEMPLATE.format(adminanswer=message.text)
     )

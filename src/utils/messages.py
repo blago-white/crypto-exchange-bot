@@ -24,18 +24,16 @@ async def make_ecn_pool(
 
     start_currency_rate: float = float(currencies_model.get_rate(currency=pool.pool_currency))
 
-    pool_start_info = await start_pool_message.answer(text=templates.POOL_STARTED.format(
+    await start_pool_message.edit_text(text=templates.POOL_STARTED.format(
         pool_amount_rub=pool.pool_amount,
         elapsed_time=int(False)
     ))
 
-    await start_pool_timer(message_for_timer=pool_start_info,
+    await start_pool_timer(message_for_timer=start_pool_message,
                            message_template=templates.POOL_STARTED.format(
                                pool_amount_rub=pool.pool_amount,
                                elapsed_time="{elapsed_time}"
                            ))
-
-    await pool_start_info.delete()
 
     end_currency_rate = float(currencies_model.get_rate(currency=pool.pool_currency))
 
