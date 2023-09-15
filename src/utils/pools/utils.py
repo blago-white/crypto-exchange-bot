@@ -35,11 +35,9 @@ def get_pool_type_by_code(code: str) -> AbstractECNPoolType:
     )[code]
 
 
-def apply_pool_result_to_wallet(pool_status: bool, pool_value: float, user_wallet: UserWallet) -> None:
+def replenish_pool_winning_amount(pool_value: float, user_wallet: UserWallet) -> None:
     if pool_status:
         return user_wallet + abs(pool_value)
-
-    user_wallet - abs(pool_value)
 
 
 def calc_winning_amount(pool_value: float, pool_type: ECNPoolTypeUp) -> float:

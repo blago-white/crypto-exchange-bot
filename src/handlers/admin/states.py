@@ -34,9 +34,6 @@ async def save_promocode(message: Message, state: FSMContext, executor: Executor
 async def answer_for_client(message: Message, state: FSMContext):
     client_id = (await state.get_data()).get("client_id")
 
-    if not client_id:
-        return
-
     await message.bot.send_message(
         chat_id=client_id,
         text=templates.ANSWER_FROM_SUPPORT_FOR_USER_TEMPLATE.format(adminanswer=message.text)

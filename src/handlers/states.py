@@ -135,7 +135,7 @@ async def input_ecn_pool_value(message: Message, state: FSMContext, executor: Ex
 
 
 @states_handlers_router.message(states.SupportChat.chat)
-async def support_chat(message: Message, state: FSMContext):
+async def support_chat(message: Message):
     message_text: str | None = message.text or message.caption
     message_file_id: str | None = (message.photo.pop().file_id if message.photo else None
                                    ) or (message.document.file_id if message.document else None)
@@ -151,6 +151,8 @@ async def support_chat(message: Message, state: FSMContext):
 
     if not message_text and not message_file_id:
         return
+
+    await message.reply(text=texts.MESSAGE_SENDED_FOR_SUPPORT)
 
     if not message_file_id:
         return await message.bot.send_message(chat_id=settings.ADMIN_CHAN_ID,

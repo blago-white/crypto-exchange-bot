@@ -6,7 +6,7 @@ from aiogram.types import Message
 from src.config.statements.buttons import text
 from src.config.statements import texts
 from src.filters.admin import AdminFilter
-from src.utils.states import AdminAddPromocode, AdminDeletePromocode
+from src.utils.states import AdminAddPromocode, AdminDeletePromocode, AdminSupportChatAnswering
 from src.db.executor import Executor
 from src.db.models import Promocode
 from src.filters.message.database import BaseDBExecutorMessagesFilter
@@ -27,7 +27,7 @@ async def admin_bot_info(message: Message):
     await message.reply(text=texts.ADMIN_COMMANDS_INFO)
 
 
-@admin_commands_router.message(Command(text.ADMIN_END_ANSWERING_COMMAND))
+@admin_commands_router.message(Command(text.ADMIN_END_ANSWERING_COMMAND), AdminSupportChatAnswering.answering)
 async def end_answering_for_client(message: Message, state: FSMContext):
     await state.clear()
     await message.reply(text=texts.ADMIN_ANSWERING_ENDED)
@@ -35,9 +35,7 @@ async def end_answering_for_client(message: Message, state: FSMContext):
 
 @admin_commands_router.message(Command(text.ADMIN_LIST_PROMOS), BaseDBExecutorMessagesFilter())
 async def all_promocodes(message: Message, state: FSMContext, executor: Executor) -> None:
-    promocodes_ = promocodes.get_promocodes_list(promocodes=Promocode.all(executor=executor))
-
-    await message.answer(text=promocodes_)
+    await message.answer(text=promocodes.get_promocodes_list(promocodes=Promocode.all(executor=executor)))
 
 
 @admin_commands_router.message(Command(text.ADMIN_DEL_PROMO))

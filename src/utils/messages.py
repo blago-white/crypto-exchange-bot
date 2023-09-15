@@ -22,6 +22,8 @@ async def make_ecn_pool(
     if user_wallet.amount < pool.pool_amount:
         raise NotEnoughMoneyForPool
 
+    user_wallet - pool.pool_amount
+
     start_currency_rate: float = float(currencies_model.get_rate(currency=pool.pool_currency))
 
     await start_pool_message.edit_text(text=templates.POOL_STARTED.format(
@@ -42,9 +44,8 @@ async def make_ecn_pool(
     pool_result_success = utils.pool_is_successfully(pool_type=pool.pool_type,
                                                      currency_rate_delta=pool_currency_rate_delta)
 
-    utils.apply_pool_result_to_wallet(pool_status=pool_result_success,
-                                      pool_value=pool.pool_amount,
-                                      user_wallet=user_wallet)
+    if pool_result_success:
+        utils.replenish_pool_winning_amount(pool_value=pool.pool_amount, user_wallet=user_wallet)
 
     await start_pool_message.edit_text(text=templates.POOL_ENDED_INFO.format(
         pool_type=pool.pool_type.text,
